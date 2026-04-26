@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>廖鑫 - 简历</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #ffffff;
+        font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .download-btn {
+        display: inline-block;
+        padding: 10px 18px;
+        font-size: 14px;
+        text-decoration: none;
+        color: #374151;
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 999px;
+      }
+
+      .pages {
+        display: grid;
+        gap: 16px;
+        justify-items: center;
+        padding: 20px 10px 8px;
+      }
+
+      canvas {
+        width: min(100%, 900px);
+        height: auto;
+        display: block;
+      }
+
+      .footer {
+        display: flex;
+        justify-content: center;
+        padding: 20px 12px 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <section id="pages" class="pages"></section>
+    <div class="footer">
+      <a class="download-btn" href="./resume.pdf" download="廖鑫的简历.pdf">下载简历</a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      (async function renderResumePages() {
+        const pagesEl = document.getElementById("pages");
+        const pdfPath = "./resume.pdf";
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+        try {
+          const pdf = await pdfjsLib.getDocument(pdfPath).promise;
+          const renderCount = pdf.numPages;
+
+          for (let i = 1; i <= renderCount; i += 1) {
+            const page = await pdf.getPage(i);
+            const baseViewport = page.getViewport({ scale: 1 });
+            const pageWidth = Math.min(900, window.innerWidth - 20);
+            const scale = pageWidth / baseViewport.width;
+            const viewport = page.getViewport({ scale: scale * window.devicePixelRatio });
+
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({
+              canvasContext: context,
+              viewport
+            }).promise;
+            pagesEl.appendChild(canvas);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      })();
+    </script>
+  </body>
+</html>
